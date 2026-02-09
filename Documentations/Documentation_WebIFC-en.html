@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>web-ifc (Engine) - Documentation</title>
+<style>
+  :root {
+    --primary: #ef4444;
+    --primary-dark: #b91c1c;
+    --bg-dark: #1e293b;
+    --bg-darker: #0f172a;
+    --bg-sidebar: #1e293b;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-light: #94a3b8;
+    --border: #e2e8f0;
+    --code-bg: #f1f5f9;
+    --accent: #ef4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-primary); line-height: 1.7; background: #f8fafc;
+  }
+
+  header {
+    background: linear-gradient(135deg, var(--bg-darker), var(--bg-dark));
+    color: white; padding: 2.5rem 2rem; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.025em; }
+  header p { color: var(--text-light); margin-top: 0.25rem; font-size: 0.95rem; }
+
+  .header-meta {
+    display: flex; gap: 1.5rem; margin-top: 0.75rem;
+    font-size: 0.8rem; color: var(--text-light);
+  }
+  .header-meta span { display: flex; align-items: center; gap: 0.35rem; }
+
+  .layout { display: flex; min-height: calc(100vh - 120px); }
+
+  nav {
+    width: 280px; min-width: 280px; background: var(--bg-sidebar);
+    padding: 1.5rem 0; position: sticky; top: 120px;
+    height: calc(100vh - 120px); overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  }
+
+  nav a {
+    display: block; padding: 0.6rem 1.5rem; color: #cbd5e1;
+    text-decoration: none; font-size: 0.875rem;
+    border-left: 3px solid transparent; transition: all 0.2s;
+  }
+  nav a:hover { background: rgba(239,68,68,0.1); color: var(--accent); border-left-color: var(--accent); }
+
+  nav .nav-section {
+    padding: 0.5rem 1.5rem; font-size: 0.7rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--text-light); margin-top: 1rem;
+  }
+
+  main { flex: 1; padding: 2.5rem 3rem; max-width: 900px; }
+  section { margin-bottom: 3rem; scroll-margin-top: 130px; }
+
+  h2 {
+    font-size: 1.5rem; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary);
+  }
+  h3 { font-size: 1.15rem; font-weight: 600; color: var(--text-primary); margin: 1.5rem 0 0.75rem; }
+  p { margin-bottom: 1rem; color: var(--text-secondary); }
+  ul, ol { margin: 0.75rem 0 1rem 1.5rem; color: var(--text-secondary); }
+  li { margin-bottom: 0.4rem; }
+
+  code {
+    background: var(--code-bg); padding: 0.15rem 0.4rem; border-radius: 4px;
+    font-size: 0.85em; font-family: 'SF Mono', 'Fira Code', Consolas, monospace; color: #be185d;
+  }
+
+  pre {
+    background: var(--bg-darker); color: #e2e8f0; padding: 1.25rem;
+    border-radius: 8px; overflow-x: auto; margin: 1rem 0;
+    font-size: 0.85rem; line-height: 1.6; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  th { background: var(--bg-dark); color: white; padding: 0.75rem 1rem; text-align: left; font-weight: 600; }
+  td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+  tr:hover td { background: #f8fafc; }
+
+  .badge {
+    display: inline-block; padding: 0.2rem 0.6rem; border-radius: 9999px;
+    font-size: 0.75rem; font-weight: 600; margin-right: 0.5rem; margin-bottom: 0.3rem;
+  }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+
+  .card {
+    background: white; border: 1px solid var(--border); border-radius: 8px;
+    padding: 1.25rem; margin: 1rem 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .card h4 { font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+
+  .folder-tree {
+    font-family: 'SF Mono', Consolas, monospace; font-size: 0.85rem;
+    line-height: 1.8; color: var(--text-secondary);
+  }
+  .folder-tree .folder { color: var(--primary-dark); font-weight: 600; }
+  .folder-tree .comment { color: var(--text-light); font-style: italic; }
+
+  footer {
+    text-align: center; padding: 2rem; color: var(--text-light);
+    font-size: 0.8rem; border-top: 1px solid var(--border); background: white;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>web-ifc (Engine Fork)</h1>
+  <p>C++ / WebAssembly IFC File Parser for Browser and Node.js -- Fork of That Open Company's web-ifc</p>
+  <div class="header-meta">
+    <span>Author: Mathis Centauri</span>
+    <span>Date: 2026-02-09</span>
+    <span>Version: 0.0.75</span>
+    <span>License: MPL-2.0</span>
+  </div>
+</header>
+
+<div class="layout">
+<nav>
+  <div class="nav-section">Overview</div>
+  <a href="#description">Description</a>
+  <a href="#tech-stack">Tech Stack</a>
+  <a href="#architecture">Architecture</a>
+  <div class="nav-section">Development</div>
+  <a href="#features">Key Features</a>
+  <a href="#installation">Installation &amp; Build</a>
+  <a href="#usage">Usage Guide</a>
+  <div class="nav-section">Reference</div>
+  <a href="#api">IfcAPI Reference</a>
+  <a href="#types">Type Definitions</a>
+  <a href="#schemas">IFC Schema Support</a>
+  <a href="#geometry">Geometry Engine</a>
+  <a href="#build-targets">Build Targets</a>
+</nav>
+
+<main>
+
+<section id="description">
+  <h2>Description</h2>
+  <p><strong>engine_web-ifc</strong> is a fork/copy of the open-source <strong>web-ifc</strong> library by That Open Company. It provides a JavaScript/WebAssembly library for reading and writing <strong>IFC (Industry Foundation Classes)</strong> files at native speeds, targeting both browser and Node.js environments.</p>
+  <p>This is the <strong>core IFC parsing engine</strong> used by the BIM viewer projects in this workspace. The C++ core is compiled to WebAssembly via Emscripten, while a TypeScript API wrapper provides a developer-friendly interface with full type safety.</p>
+</section>
+
+<section id="tech-stack">
+  <h2>Tech Stack</h2>
+  <div>
+    <span class="badge badge-red">C++</span>
+    <span class="badge badge-orange">WebAssembly</span>
+    <span class="badge badge-blue">TypeScript 5.8</span>
+    <span class="badge badge-green">Emscripten 3.1.44+</span>
+    <span class="badge badge-purple">CMake 3.18+</span>
+    <span class="badge badge-blue">esbuild</span>
+    <span class="badge badge-green">Jest</span>
+    <span class="badge badge-purple">Docker</span>
+  </div>
+
+  <table>
+    <thead><tr><th>Technology</th><th>Version</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>C++</td><td>C++17</td><td>Core IFC parser and geometry engine</td></tr>
+      <tr><td>Emscripten</td><td>3.1.44+</td><td>C++ to WebAssembly compiler</td></tr>
+      <tr><td>CMake</td><td>3.18+</td><td>C++ build system configuration</td></tr>
+      <tr><td>TypeScript</td><td>5.8+</td><td>API wrapper and type definitions</td></tr>
+      <tr><td>esbuild</td><td>0.27+</td><td>JavaScript/TypeScript bundling (browser, Node, IIFE)</td></tr>
+      <tr><td>Jest</td><td>30.x</td><td>Testing framework</td></tr>
+      <tr><td>Docker</td><td>Latest</td><td>Optional containerized build environment</td></tr>
+      <tr><td>Three.js</td><td>0.182</td><td>3D viewer for development examples</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="architecture">
+  <h2>Architecture / Folder Structure</h2>
+  <div class="folder-tree">
+    <span class="folder">Sources/</span><br>
+    &nbsp;&nbsp;<span class="file">package.json</span> <span class="comment">-- npm package (web-ifc v0.0.75)</span><br>
+    &nbsp;&nbsp;<span class="file">tsconfig.json</span> <span class="comment">-- TypeScript configuration</span><br>
+    &nbsp;&nbsp;<span class="file">Dockerfile</span> <span class="comment">-- Container-based build</span><br>
+    &nbsp;&nbsp;<span class="folder">src/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">cpp/</span> <span class="comment">-- C++ source code</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">CMakeLists.txt</span> <span class="comment">-- WASM build configuration</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">version.h</span> <span class="comment">-- Version constants</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">web-ifc/</span> <span class="comment">-- Core parser, geometry, schema code</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">wasm/</span> <span class="comment">-- Emscripten bindings</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">test/</span> <span class="comment">-- C++ tests</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">ts/</span> <span class="comment">-- TypeScript API wrapper</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">web-ifc-api.ts</span> <span class="comment">-- Main IfcAPI class (1500+ lines)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">ifc-schema.ts</span> <span class="comment">-- Generated IFC schema definitions</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">helpers/</span> <span class="comment">-- Properties helper, logging utility</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">schema-generator/</span> <span class="comment">-- IFC schema code generator</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">-- IFC2X3, IFC4, IFC4X3 .exp schema files</span><br>
+    &nbsp;&nbsp;<span class="folder">examples/</span> <span class="comment">-- Usage examples (Node.js, viewer, TypeScript)</span><br>
+    &nbsp;&nbsp;<span class="folder">tests/</span> <span class="comment">-- Functional tests, benchmarks, regression tests</span><br>
+    &nbsp;&nbsp;<span class="folder">dist/</span> <span class="comment">-- Build output (.wasm, .js, .d.ts)</span><br>
+  </div>
+</section>
+
+<section id="features">
+  <h2>Key Features</h2>
+  <div class="card">
+    <h4>Native-Speed IFC Parsing</h4>
+    <p>C++ parser compiled to WebAssembly for near-native performance when reading and writing IFC files in the browser or Node.js, handling models with millions of elements.</p>
+  </div>
+  <div class="card">
+    <h4>Multi-Schema Support</h4>
+    <p>Supports IFC2X3, IFC4, and IFC4X3 schemas. Automatically detects the schema from the FILE_SCHEMA header and applies the correct type constructors and inheritance definitions.</p>
+  </div>
+  <div class="card">
+    <h4>Full Read/Write Capability</h4>
+    <p>Read existing IFC files, create new models programmatically, modify elements, write lines, delete entities, and save back to IFC format. Complete CRUD operations on IFC data.</p>
+  </div>
+  <div class="card">
+    <h4>3D Geometry Engine</h4>
+    <p>Built-in geometry extraction: mesh streaming, flat mesh generation, extrusions, sweeps, revolutions, boolean operations, profile sections, arcs, clothoids, parabolas, and alignment data.</p>
+  </div>
+  <div class="card">
+    <h4>Streaming API</h4>
+    <p>Stream meshes one at a time via callbacks (<code>StreamAllMeshes</code>, <code>StreamMeshes</code>, <code>StreamAllMeshesWithTypes</code>) to handle large models without loading all geometry into memory at once.</p>
+  </div>
+  <div class="card">
+    <h4>Multi-Threading Support</h4>
+    <p>Optional multi-threaded WASM build (<code>web-ifc-mt.wasm</code>) for cross-origin isolated environments, with automatic fallback to single-threaded mode.</p>
+  </div>
+  <div class="card">
+    <h4>Cross-Platform Distribution</h4>
+    <p>Three build targets: ESM for browsers, CommonJS for Node.js, and IIFE for script-tag inclusion. Separate WASM files for browser, Node.js, and multi-threaded contexts.</p>
+  </div>
+</section>
+
+<section id="installation">
+  <h2>Installation &amp; Build</h2>
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>Node.js v16+ and npm v7+</li>
+    <li>Emscripten SDK v3.1.44+ (for WASM compilation)</li>
+    <li>CMake v3.18+ (for C++ build system)</li>
+  </ul>
+
+  <h3>Install Dependencies</h3>
+  <pre><code>cd Sources
+npm install</code></pre>
+
+  <h3>Full Release Build (WASM + JS API)</h3>
+  <pre><code>npm run setup-env          # Set up Emscripten environment variables
+npm run build-release      # Build WASM + JS API (output in dist/)</code></pre>
+
+  <h3>Debug Build</h3>
+  <pre><code>npm run build-debug        # Build with debug symbols</code></pre>
+
+  <h3>Development Viewer</h3>
+  <pre><code>npm run dev                # Launch local viewer on port 8080</code></pre>
+
+  <h3>Run Tests</h3>
+  <pre><code>npm test                   # Jest test suite
+npm run benchmark          # Performance benchmarks
+npm run regression         # Regression test suite</code></pre>
+
+  <h3>Docker Build</h3>
+  <pre><code>npm run docker-build       # Build Docker image
+npm run docker-run         # Run container and extract compiled files</code></pre>
+
+  <h3>Schema Generation</h3>
+  <pre><code>npm run gen-schema         # Regenerate IFC schema TypeScript from .exp files</code></pre>
+</section>
+
+<section id="usage">
+  <h2>Usage Guide</h2>
+
+  <h3>Browser (ESM)</h3>
+  <pre><code>import { IfcAPI } from 'web-ifc';
+
+const ifcApi = new IfcAPI();
+ifcApi.SetWasmPath('./');
+await ifcApi.Init();
+
+// Load an IFC file
+const response = await fetch('model.ifc');
+const data = new Uint8Array(await response.arrayBuffer());
+const modelID = ifcApi.OpenModel(data);
+
+// Read all elements of a specific type
+const lines = ifcApi.GetLineIDsWithType(modelID, IFCDOOR);
+for (let i = 0; i &lt; lines.size(); i++) {
+  const door = ifcApi.GetLine(modelID, lines.get(i));
+  console.log(door.Name.value, door.GlobalId.value);
+}
+
+// Stream all meshes for 3D rendering
+ifcApi.StreamAllMeshes(modelID, (mesh, index, total) => {
+  // Process mesh geometry
+});
+
+ifcApi.CloseModel(modelID);</code></pre>
+
+  <h3>Node.js (CommonJS)</h3>
+  <pre><code>const { IfcAPI } = require('web-ifc');
+const fs = require('fs');
+
+const ifcApi = new IfcAPI();
+await ifcApi.Init();
+
+const data = fs.readFileSync('model.ifc');
+const modelID = ifcApi.OpenModel(new Uint8Array(data));
+
+// Get model schema version
+const schema = ifcApi.GetModelSchema(modelID);
+console.log(`Schema: ${schema}`); // "IFC4"
+
+// Save modified model
+const savedData = ifcApi.SaveModel(modelID);
+fs.writeFileSync('output.ifc', savedData);
+
+ifcApi.CloseModel(modelID);</code></pre>
+
+  <h3>Create a New Model</h3>
+  <pre><code>const modelID = ifcApi.CreateModel({
+  schema: 'IFC4',
+  name: 'MyProject.ifc',
+  description: ['ViewDefinition [CoordinationView]'],
+  authors: ['Mathis Centauri'],
+  organizations: ['My Company']
+});
+
+// Write entities to the model
+const wall = ifcApi.CreateIfcEntity(modelID, IFCWALL, ...args);
+ifcApi.WriteLine(modelID, wall);
+
+const data = ifcApi.SaveModel(modelID);</code></pre>
+</section>
+
+<section id="api">
+  <h2>IfcAPI Reference</h2>
+
+  <h3>Initialization</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>Init(locateFileHandler?, forceSingleThread?)</code></td><td>Initialize WASM module. Required before any other operation.</td></tr>
+      <tr><td><code>SetWasmPath(path, absolute?)</code></td><td>Set the directory where .wasm files are located</td></tr>
+      <tr><td><code>SetLogLevel(level)</code></td><td>Set logging verbosity (LOG_LEVEL_ERROR, LOG_LEVEL_WARN, etc.)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Model Operations</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>OpenModel(data, settings?)</code></td><td>Open an IFC file from a Uint8Array buffer. Returns modelID.</td></tr>
+      <tr><td><code>OpenModels(dataSets, settings?)</code></td><td>Open multiple models simultaneously, splitting memory limits.</td></tr>
+      <tr><td><code>OpenModelFromCallback(callback, settings?)</code></td><td>Open model via streaming callback function.</td></tr>
+      <tr><td><code>CreateModel(model, settings?)</code></td><td>Create a new empty IFC model. Returns modelID.</td></tr>
+      <tr><td><code>SaveModel(modelID)</code></td><td>Save model to Uint8Array buffer.</td></tr>
+      <tr><td><code>SaveModelToCallback(modelID, callback)</code></td><td>Save model via streaming callback.</td></tr>
+      <tr><td><code>CloseModel(modelID)</code></td><td>Close model and free memory.</td></tr>
+      <tr><td><code>IsModelOpen(modelID)</code></td><td>Check if a model is currently open.</td></tr>
+      <tr><td><code>GetModelSchema(modelID)</code></td><td>Get IFC schema version string (e.g., "IFC4").</td></tr>
+      <tr><td><code>Dispose()</code></td><td>Close all models and free all memory.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Entity Operations</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>GetLine(modelID, expressID, flatten?, inverse?)</code></td><td>Get a single IFC line/entity by express ID.</td></tr>
+      <tr><td><code>GetLines(modelID, expressIDs, flatten?, inverse?)</code></td><td>Get multiple IFC lines/entities.</td></tr>
+      <tr><td><code>WriteLine(modelID, lineObject)</code></td><td>Write/update a single entity.</td></tr>
+      <tr><td><code>WriteLines(modelID, lineObjects)</code></td><td>Write/update multiple entities.</td></tr>
+      <tr><td><code>DeleteLine(modelID, expressID)</code></td><td>Delete an entity by express ID.</td></tr>
+      <tr><td><code>GetLineIDsWithType(modelID, type, includeInherited?)</code></td><td>Get all entity IDs of a specific IFC type.</td></tr>
+      <tr><td><code>GetAllLines(modelID)</code></td><td>Get all line IDs in the model.</td></tr>
+      <tr><td><code>GetLineType(modelID, expressID)</code></td><td>Get the IFC type code of an entity.</td></tr>
+      <tr><td><code>GetMaxExpressID(modelID)</code></td><td>Get the highest express ID in the model.</td></tr>
+      <tr><td><code>GetNextExpressID(modelID, expressID)</code></td><td>Get the next unused express ID.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Geometry</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>GetGeometry(modelID, expressID)</code></td><td>Get vertex and index data for an element.</td></tr>
+      <tr><td><code>GetFlatMesh(modelID, expressID)</code></td><td>Get flat mesh for a single element.</td></tr>
+      <tr><td><code>LoadAllGeometry(modelID)</code></td><td>Load all geometry at once.</td></tr>
+      <tr><td><code>StreamAllMeshes(modelID, callback)</code></td><td>Stream all meshes via callback.</td></tr>
+      <tr><td><code>StreamMeshes(modelID, expressIDs, callback)</code></td><td>Stream specific meshes.</td></tr>
+      <tr><td><code>StreamAllMeshesWithTypes(modelID, types, callback)</code></td><td>Stream meshes filtered by IFC type.</td></tr>
+      <tr><td><code>GetAllAlignments(modelID)</code></td><td>Get IFC4x3 alignment data.</td></tr>
+      <tr><td><code>GetAllCrossSections2D/3D(modelID)</code></td><td>Get cross-section data.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Utility</h3>
+  <table>
+    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>CreateIfcEntity(modelID, type, ...args)</code></td><td>Create a new IFC entity object.</td></tr>
+      <tr><td><code>CreateIfcType(modelID, type, value)</code></td><td>Create a typed IFC value (IfcLabel, IfcReal, etc.).</td></tr>
+      <tr><td><code>CreateIFCGloballyUniqueId(modelID)</code></td><td>Generate a new IFC GUID.</td></tr>
+      <tr><td><code>GetExpressIdFromGuid(modelID, guid)</code></td><td>Lookup express ID from GlobalId.</td></tr>
+      <tr><td><code>GetGuidFromExpressId(modelID, expressID)</code></td><td>Lookup GlobalId from express ID.</td></tr>
+      <tr><td><code>GetAllTypesOfModel(modelID)</code></td><td>List all IFC types present in the model.</td></tr>
+      <tr><td><code>GetVersion()</code></td><td>Get web-ifc version string.</td></tr>
+      <tr><td><code>EncodeText(text)</code> / <code>DecodeText(text)</code></td><td>IFC text encoding/decoding.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="types">
+  <h2>Type Definitions</h2>
+
+  <h3>LoaderSettings</h3>
+  <pre><code>interface LoaderSettings {
+  COORDINATE_TO_ORIGIN?: boolean;     // Translate model to origin
+  CIRCLE_SEGMENTS?: number;           // Circle approximation segments (default: 12)
+  MEMORY_LIMIT?: number;              // Max memory in bytes (default: 2GB)
+  TAPE_SIZE?: number;                 // Internal buffer size (default: 64MB)
+  LINEWRITER_BUFFER?: number;         // Lines to batch-write (default: 10000)
+  TOLERANCE_PLANE_INTERSECTION?: number;
+  TOLERANCE_PLANE_DEVIATION?: number;
+  BOOLEAN_UNION_THRESHOLD?: number;   // Min solids for boolean union (default: 150)
+}</code></pre>
+
+  <h3>Core Geometry Types</h3>
+  <pre><code>interface FlatMesh {
+  geometries: Vector&lt;PlacedGeometry&gt;;
+  expressID: number;
+}
+
+interface PlacedGeometry {
+  color: Color;                  // RGBA color
+  geometryExpressID: number;
+  flatTransformation: number[];  // 4x4 matrix
+}
+
+interface IfcGeometry {
+  GetVertexData(): number;
+  GetVertexDataSize(): number;
+  GetIndexData(): number;
+  GetIndexDataSize(): number;
+}</code></pre>
+</section>
+
+<section id="schemas">
+  <h2>IFC Schema Support</h2>
+  <table>
+    <thead><tr><th>Schema</th><th>Status</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>IFC2X3</td><td>Full support</td><td>Legacy schema, widely used in existing BIM models</td></tr>
+      <tr><td>IFC4</td><td>Full support</td><td>Current standard with enhanced geometry and property sets</td></tr>
+      <tr><td>IFC4X3</td><td>Full support</td><td>Latest schema with alignment, cross-sections, and infrastructure</td></tr>
+    </tbody>
+  </table>
+  <p>Schema definitions are generated from <code>.exp</code> (EXPRESS) files in the <code>src/schema-generator/</code> directory using <code>npm run gen-schema</code>.</p>
+</section>
+
+<section id="geometry">
+  <h2>Geometry Engine</h2>
+  <p>The C++ geometry engine provides factory methods for creating and computing various geometric primitives:</p>
+  <table>
+    <thead><tr><th>Factory</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>CreateExtrusion()</code></td><td>Linear extrusion of a profile along a direction</td></tr>
+      <tr><td><code>CreateSweep()</code></td><td>Profile swept along a directrix curve</td></tr>
+      <tr><td><code>CreateCircularSweep()</code></td><td>Profile swept along a circular arc</td></tr>
+      <tr><td><code>CreateRevolution()</code></td><td>Profile revolved around an axis</td></tr>
+      <tr><td><code>CreateCylindricalRevolution()</code></td><td>Cylindrical revolution geometry</td></tr>
+      <tr><td><code>CreateParabola()</code></td><td>Parabolic curve geometry</td></tr>
+      <tr><td><code>CreateClothoid()</code></td><td>Clothoid (Euler spiral) curve</td></tr>
+      <tr><td><code>CreateArc()</code></td><td>Elliptical arc geometry</td></tr>
+      <tr><td><code>CreateBooleanOperator()</code></td><td>CSG boolean operations (union, subtraction, intersection)</td></tr>
+      <tr><td><code>CreateAABB()</code></td><td>Axis-aligned bounding box</td></tr>
+      <tr><td><code>CreateProfile()</code></td><td>2D profile section (I-beam, T-section, etc.)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="build-targets">
+  <h2>Build Targets</h2>
+  <table>
+    <thead><tr><th>Output</th><th>Format</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td><code>web-ifc-api.js</code></td><td>ESM</td><td>Browser imports (<code>import { IfcAPI } from 'web-ifc'</code>)</td></tr>
+      <tr><td><code>web-ifc-api-node.js</code></td><td>CommonJS</td><td>Node.js (<code>require('web-ifc')</code>)</td></tr>
+      <tr><td><code>web-ifc-api-iife.js</code></td><td>IIFE</td><td>Script tag (<code>window.WebIFC.IfcAPI</code>)</td></tr>
+      <tr><td><code>web-ifc.wasm</code></td><td>WASM</td><td>Browser single-threaded</td></tr>
+      <tr><td><code>web-ifc-mt.wasm</code></td><td>WASM (MT)</td><td>Browser multi-threaded (SharedArrayBuffer)</td></tr>
+      <tr><td><code>web-ifc-node.wasm</code></td><td>WASM</td><td>Node.js optimized</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+</div>
+
+<footer>
+  web-ifc Engine Documentation &mdash; Author: Mathis Centauri &mdash; Generated: 2026-02-09 &mdash; Original: That Open Company (MPL-2.0)
+</footer>
+
+</body>
+</html>
